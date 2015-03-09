@@ -117,6 +117,7 @@ func (tmpl *Template) readString(s string) (string, error) {
 
 func (tmpl *Template) lookupPartial(name string) *Template {
 	result, ok := tmpl.environment.partials[name]
+	fmt.Println(name, result, ok)
 	if ok {
 		return result
 	}
@@ -696,6 +697,22 @@ func (tmpl *Template) RenderInLayout(layout *Template, context ...interface{}) s
 
 func ParseString(data string) (*Template, error) {
 	return parseString(data, defaultOtag, defaultCtag, newEnvironment())
+}
+
+func ParseStringWithPartials(data string, partials map[string]interface{}) (*Template, error) {
+	
+	env := newEnvironment();
+	
+	// parse a map of partials
+	for name, data := range partials {
+		if data, ok := data.(string); ok {
+			if template, err := ParseString(data); err == nil {
+				env.partials[name] = template
+			}
+		}
+	}
+	
+	return parseString(data, defaultOtag, defaultCtag, env)
 }
 
 func parseString(data string, otag string, ctag string, environment environment) (*Template, error) {
